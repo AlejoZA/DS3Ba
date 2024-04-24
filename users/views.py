@@ -53,8 +53,8 @@ def registeration_view(request):
             # Generar token de activación
             token = default_token_generator.make_token(user)
             # Envía el token a través del método de autenticación predeterminado
-            messages.success(request, _('Successfully registered. Please log in to continue.'))  # Mensaje de registro exitoso
-            return redirect('users:login')  # Redirigir al usuario al formulario de inicio de sesión
+            messages.success(request, _('Successfully registered. Please log in to continue.')) 
+            return redirect('users:login') 
     else:
         form = RegisterForm()
     return render(request, 'users/register.html', {'form': form})
@@ -153,7 +153,7 @@ def get_user_data(request):
         'email': user.email,
         'first_name': user.first_name,
         'last_name': user.last_name,
-        'cedula': user.cedula,  # Agrega otros campos que quieras devolver
+        'cedula': user.cedula,  
         'telefono': user.telefono,
         'direccion': user.direccion
     }
