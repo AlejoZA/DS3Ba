@@ -1,4 +1,6 @@
-from django.contrib.auth import authenticate, login, logout, get_user_model
+# users/views.py
+
+from django.contrib.auth import authenticate, login, logout, get_user_model, update_session_auth_hash
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
@@ -10,9 +12,6 @@ from django.http import JsonResponse
 from .forms import CustomLoginForm, RegisterForm, ForgetPasswordEmailCodeForm, ChangePasswordForm, OtpForm, ProfileEditForm
 from .models import OtpCode, CustomUser
 from .decorators import only_authenticated_user, redirect_authenticated_user
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 
 @only_authenticated_user
 def home_view(request):
@@ -117,7 +116,7 @@ def reset_new_password_view(request):
             email = request.session['email']
             del request.session['email']
             user = CustomUser.objects.get(email=email)
-            user.password = make_password(form.cleaned_data["new_password2"])
+            user.set_password(form.cleaned_data["new_password2"])
             user.save()
             messages.success(request, "Your password changed. Now you can login with your new password.")
             return redirect('users:login')
@@ -131,20 +130,23 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileEditForm(request.POST, instance=user)
         if form.is_valid():
-            # Guardar los cambios en el perfil del usuario
-            form.save()
+            user = form.save(commit=False)
+            password = form.cleaned_data.get('password')
+            if password:
+                user.set_password(password)
+            user.save()
+            update_session_auth_hash(request, user)  # Important for session invalidation
             messages.success(request, 'Profile updated successfully.')
             return redirect('users:profile')
     else:
-        # Crear el formulario pre-populado con los datos del usuario
         form = ProfileEditForm(instance=user)
-
     return render(request, 'users/edit_profile.html', {'form': form})
 
 @login_required
 def profile_view(request):
     user = request.user
     return render(request, 'users/profile.html', {'user': user})
+
 @login_required
 def get_user_data(request):
     user = request.user
