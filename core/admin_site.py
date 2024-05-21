@@ -2,7 +2,6 @@ from django.contrib.admin import AdminSite
 from users.admin import *
 from users.models import OtpCode
 
-
 class CustomAdminSite(AdminSite):
     site_header = 'Custom administration'
     site_title = 'Custom site admin'
